@@ -5,12 +5,14 @@
 #include <math.h>
 
 #define N 5
-#define D 6
-#define EPS 0.001
+#define D 5
+#define EPS 0.1
 
 double multiplication_of_wx(int *singleHotVector, double *parameters);
 double *partial_derivative_of_mean_square_error(int *singleHotVector, double *parameters, int y_true);
-void gradient_descent(int **hotVectors, double *parameters, double *y_true);
+void sum_of_partial_derivative_mse(int **hotVectors, double *parameters, double *pdmse_sum, int *y_true);
+void gradient_descent(int **hotVectors, double *parameters, int *y_true);
+double total_mean_square_error(int **hotVectors, double *parameters, int *y_true);
 
 
 int main()
@@ -42,7 +44,12 @@ int main()
     i = j = 0;
     while ((ch = getc(hotVectorsPtr)) != EOF) 
     {
-        if (ch == '\n') i++;
+        // printf("%d %d %d\n", i, j, ch);
+        if (ch == '\n') 
+        {
+            i++;
+            j = 0;
+        }
         if (ch == '1' || ch == '0') 
         {
             hotVectors[i][j] = ch - '0';
@@ -50,6 +57,12 @@ int main()
         }
     }
     fclose(hotVectorsPtr);
+    // for (int i = 0; i < N; i++) 
+    // {
+    //     for (int j = 0; j < D; j++)
+    //         printf("%d ", hotVectors[i][j]);
+    //     printf("\n");
+    // }
 
     // Read true y values
     y_true = calloc(N, sizeof(int));
@@ -71,20 +84,21 @@ int main()
 
     // Initialize parameters
     parameters = calloc(D, sizeof(double));
+    for (int i = 0; i < D; i++) parameters[i] = 0.3;
 
-    // 5 iteration of GD
-    for (int i = 0; i < 5; i++) 
+    // 1000 iteration of GD
+    for (int i = 0; i < 1000; i++) 
     {
         gradient_descent(hotVectors, parameters, y_true);
-        for (int j = 0; j < D; j++) printf("%lf ", parameters[j]);
-        puts("");
+        for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
+        printf("-> %lf\n", total_mean_square_error(hotVectors, parameters, y_true));
     }
 
     return 0;
 }
 
 
-void gradient_descent(int **hotVectors, double *parameters, double *y_true) 
+void gradient_descent(int **hotVectors, double *parameters, int *y_true) 
 {
     double *pdmse_sum = calloc(D, sizeof(double));
     sum_of_partial_derivative_mse(hotVectors, parameters, pdmse_sum, y_true);
@@ -99,7 +113,7 @@ double *partial_derivative_of_mean_square_error(int *singleHotVector, double *pa
     double wx, *pdmse = calloc(D, sizeof(double));
     wx = multiplication_of_wx(singleHotVector, parameters);
     for (int i = 0; i < D; i++) 
-        pdmse[i] = (single_y_true - tanh(wx)) * parameters[i] * (-1 / (cosh(wx) * cosh(wx)));
+        pdmse[i] = (single_y_true - tanh(wx)) * singleHotVector[i] * (-1 / (cosh(wx) * cosh(wx)));
     return pdmse;
 }
 
@@ -121,4 +135,14 @@ double multiplication_of_wx(int *singleHotVector, double *parameters)
     double m = 0;
     for (int i = 0; i < D; i++) m += singleHotVector[i] * parameters[i];
     return m;
+}
+
+
+double total_mean_square_error(int **hotVectors, double *parameters, int *y_true)
+{
+    double r, mse_sum = 0;
+    for (int i = 0; i < N; i++) 
+        r = (y_true[i] - tanh(multiplication_of_wx(hotVectors[i], parameters)));
+        mse_sum += r * r;
+    return (1.0 / N) * mse_sum;
 }
