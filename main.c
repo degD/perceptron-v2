@@ -14,6 +14,7 @@ void sum_of_partial_derivative_mse(int **hotVectors, double *parameters, double 
 void gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double total_mean_square_error(int **hotVectors, double *parameters, int *y_true);
 void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true);
+double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, int *y_true);
 
 
 int main()
@@ -85,7 +86,7 @@ int main()
 
     // Initialize parameters
     parameters = calloc(D, sizeof(double));
-    for (int i = 0; i < D; i++) parameters[i] = 0.3;
+    for (int i = 0; i < D; i++) parameters[i] = 0.1;
 
     // 10 iteration of SGD
     for (int i = 0; i < 10; i++) 
@@ -152,11 +153,17 @@ double total_mean_square_error(int **hotVectors, double *parameters, int *y_true
 
 void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true) 
 {
-    int random_i = rand() % N;
     double *random_pdmse;
-    random_pdmse = partial_derivative_of_mean_square_error(hotVectors[random_i], parameters, y_true[random_i]);
+    random_pdmse = stochastic_partial_derivative_mse(hotVectors, parameters, y_true);
 
     for (int i = 0; i < D; i++) 
         parameters[i] -= EPS * random_pdmse[i];
     free(random_pdmse);
+}
+
+
+double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, int *y_true)
+{
+    int random_i = rand() % N;
+    return partial_derivative_of_mean_square_error(hotVectors[random_i], parameters, y_true[random_i]);
 }
