@@ -79,8 +79,12 @@ int main()
     // for (int i = 0; i < unique_words; i++) printf("%s\n", dict[i]);
 
     // Save dictionary array to file
+    fprintf(dPtr, "%d\n", unique_words);
     for (int i = 0; i < unique_words; i++) fprintf(dPtr, "%s\n", dict[i]);
-
+    
+    free(dict);
+    for (int i = 0; i < sample_word_count; i++) free(dict[i]);
+    
     fclose(sPtr);
     fclose(dPtr);
     return 0;
