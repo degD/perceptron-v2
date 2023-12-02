@@ -8,7 +8,7 @@
 int main()
 {
     char **dict, ch, word[MAX_WORD];
-    int unique_words, *hotVector;
+    int unique_words, *hotVector, word_i = 0;
     FILE *dPtr, *hvPtr, *sPtr;
 
     dPtr = fopen("dictionary.txt", "r");
@@ -28,16 +28,46 @@ int main()
     for (int i = 0; i < unique_words; i++)
     {
         dict[i] = calloc(MAX_WORD, sizeof(char));
-        fgets(dict[i], MAX_WORD, dPtr);
+        fscanf(dPtr, "%s", dict[i]);
+        // printf("%3d: %s\n", i, dict[i]);
     }
 
     // Generate and save hot vectors
     hotVector = calloc(unique_words, sizeof(int));
     do {
-        fscanf(sPtr, "%s", word);
-        printf("%s\n", word);
+        ch = fgetc(sPtr);
+
+        if (ch == ' ' || ch == '\n' || ch == EOF)
+        {
+            word[word_i] = '\0';
+            word_i = 0;
+
+            for (int i = 0; i < unique_words; i++)
+            {
+                if (strcmp(word, dict[i]) == 0)
+                {
+                    hotVector[i] = 1;
+                    break;
+                }
+            }
+        }
+        else word[word_i++] = ch;
+
+        if (ch == '\n' || ch == EOF)
+        {
+            for (int i = 0; i < unique_words; i++) {
+                fprintf(hvPtr, "%d ", hotVector[i]);
+                hotVector[i] = 0;
+            }
+            fputc('\n', hvPtr);
+
+            word[word_i] = '\0';
+            word_i = 0;
+        }
+
+        // printf("%s\n", word);
     }
-    while (!feof(sPtr));
+    while (ch != EOF);
 
     
     fclose(dPtr);
