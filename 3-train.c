@@ -1,14 +1,14 @@
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
 
 #define N 6
 #define D 22
 #define EPS 0.1
 #define CONVERGENCE_LIMIT 0.00001
-#define MSE_LIMIT 0.01
+#define STEP_LIMIT 1000
 
 double multiplication_of_wx(int *singleHotVector, double *parameters);
 double *partial_derivative_of_mean_square_error(int *singleHotVector, double *parameters, int y_true);
@@ -22,11 +22,19 @@ int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int 
 
 int main()
 {
-    FILE *hotVectorsPtr, *truePtr;
+    FILE *hotVectorsPtr, *truePtr, *modelPtr;
     int **hotVectors, *y_true, i, j;
     double *parameters;
     double total_mse = 1, total_mse_old = 0;
     char ch;
+    int mode, step = 0;
+
+    printf("Which algorithm? (GD: 0, SGD: 1, ADAM: 2): ");
+    scanf("%d", &mode);
+    if (mode < 0 || mode > 2) {
+        puts("!! Undefined algorithm");
+        return -1;
+    }
 
     // Open hot vectors file
     hotVectorsPtr = fopen("hotVectors.txt", "r");
@@ -44,9 +52,17 @@ int main()
         return -1;
     }    
 
+    // Open model file
+    modelPtr = fopen("model.txt", "w");
+    if (modelPtr == NULL) 
+    {
+        puts("!! Unable to open file 'model.txt'");
+        return -1;
+    }   
+
     // Read hot vectors (NxD)
-    hotVectors = calloc(N, sizeof(double *));
-    for (int i = 0; i < D; i++) hotVectors[i] = calloc(D, sizeof(double));
+    hotVectors = calloc(N, sizeof(int *));
+    for (int i = 0; i < N; i++) hotVectors[i] = calloc(D, sizeof(int));
     i = j = 0;
     while ((ch = getc(hotVectorsPtr)) != EOF) 
     {
@@ -63,12 +79,6 @@ int main()
         }
     }
     fclose(hotVectorsPtr);
-    // for (int i = 0; i < N; i++) 
-    // {
-    //     for (int j = 0; j < D; j++)
-    //         printf("%d ", hotVectors[i][j]);
-    //     printf("\n");
-    // }
 
     // Read true y values
     y_true = calloc(N, sizeof(int));
@@ -92,42 +102,51 @@ int main()
     parameters = calloc(D, sizeof(double));
     for (int i = 0; i < D; i++) parameters[i] = 0.1;
 
-    // 10 iteration of SGD
-    puts("10 Iteration SGD:");
-    for (int i = 0; i < 10; i++) 
+    // Gradient Descent
+    if (mode == 0)
     {
-        // gradient_descent(hotVectors, parameters, y_true);
-        stochastic_gradient_descent(hotVectors, parameters, y_true);
-        for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
-        printf("-> %lf\n", total_mean_square_error(hotVectors, parameters, y_true));
+        // Repeat until converges or step number exceeds the limit
+        while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && step < STEP_LIMIT)
+        {
+            gradient_descent(hotVectors, parameters, y_true);
+            total_mse_old = total_mse;
+            total_mse = total_mean_square_error(hotVectors, parameters, y_true);
+
+            // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
+            // printf("-> %lf\n", fabs(total_mse - total_mse_old));
+        }
     }
-    free(parameters);
 
-    // Initialize parameters
-    parameters = calloc(D, sizeof(double));
-    for (int i = 0; i < D; i++) parameters[i] = 0.1;
-
-    // GD until converge
-    puts("\nGD until converges:");
-    while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT)
+    // Stochastic Gradient Descent
+    if (mode == 1)
     {
-        gradient_descent(hotVectors, parameters, y_true);
-        total_mse_old = total_mse;
-        total_mse = total_mean_square_error(hotVectors, parameters, y_true);
+        // Repeat until converges or step number exceeds the limit
+        while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && step < STEP_LIMIT)
+        {
+            stochastic_gradient_descent(hotVectors, parameters, y_true);
+            total_mse_old = total_mse;
+            total_mse = total_mean_square_error(hotVectors, parameters, y_true);
 
-        for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
-        printf("-> %lf\n", fabs(total_mse - total_mse_old));
+            // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
+            // printf("-> %lf\n", fabs(total_mse - total_mse_old));
+        }
     }
-    free(parameters);
-
-    // Initialize parameters
-    parameters = calloc(D, sizeof(double));
-    for (int i = 0; i < D; i++) parameters[i] = 0.1;
 
     // ADAM
-    puts("\nADAM algorithm:");
-    adaptive_movement_estimation_adam(hotVectors, parameters, y_true);
+    if (mode == 2)
+        adaptive_movement_estimation_adam(hotVectors, parameters, y_true);
 
+
+    // Save trained parameters and free memory
+    puts("Complete, saving...");
+    for (int i = 0; i < D; i++) fprintf(modelPtr, "%lf\n", parameters[i]);
+    free(parameters);
+    
+    for (int i = 0; i < N; i++) free(hotVectors[i]);
+    free(hotVectors);
+    free(y_true);
+
+    fclose(modelPtr);
     return 0;
 }
 
@@ -176,8 +195,10 @@ double total_mean_square_error(int **hotVectors, double *parameters, int *y_true
 {
     double r, mse_sum = 0;
     for (int i = 0; i < N; i++) 
+    {
         r = (y_true[i] - tanh(multiplication_of_wx(hotVectors[i], parameters)));
         mse_sum += r * r;
+    }
     return (1.0 / N) * mse_sum;
 }
 
@@ -212,7 +233,7 @@ int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int 
     m_hat = calloc(D, sizeof(double));
     v_hat = calloc(D, sizeof(double));
 
-    while (total_mse > MSE_LIMIT)
+    while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && t < STEP_LIMIT)
     {
         t += 1;
         approx_gradient = stochastic_partial_derivative_mse(hotVectors, parameters, y_true);
@@ -230,7 +251,7 @@ int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int 
         total_mse = total_mean_square_error(hotVectors, parameters, y_true);
 
         // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
-        printf("%4d -> %lf\n", step_count, total_mse);        
+        // printf("%4d -> %lf\n", step_count, total_mse);        
 
         step_count++;
     }
