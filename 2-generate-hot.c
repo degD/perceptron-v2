@@ -59,6 +59,7 @@ int main()
                 fprintf(hvPtr, "%d ", hotVector[i]);
                 hotVector[i] = 0;
             }
+            fseek(hvPtr, -1, SEEK_CUR);
             fputc('\n', hvPtr);
 
             word[word_i] = '\0';
