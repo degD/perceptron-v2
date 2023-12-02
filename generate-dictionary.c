@@ -16,7 +16,7 @@ int main()
 
     if (sPtr == NULL || dPtr == NULL)
     {
-        puts("!! Unable to read 'samples.txt' or 'dictionary.txt'\n");
+        puts("!! Unable to access 'samples.txt' or 'dictionary.txt'\n");
         return -1;
     }
 
@@ -84,7 +84,7 @@ int main()
     
     free(dict);
     for (int i = 0; i < sample_word_count; i++) free(dict[i]);
-    
+
     fclose(sPtr);
     fclose(dPtr);
     return 0;
