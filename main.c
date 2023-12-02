@@ -13,6 +13,7 @@ double *partial_derivative_of_mean_square_error(int *singleHotVector, double *pa
 void sum_of_partial_derivative_mse(int **hotVectors, double *parameters, double *pdmse_sum, int *y_true);
 void gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double total_mean_square_error(int **hotVectors, double *parameters, int *y_true);
+void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true);
 
 
 int main()
@@ -86,10 +87,11 @@ int main()
     parameters = calloc(D, sizeof(double));
     for (int i = 0; i < D; i++) parameters[i] = 0.3;
 
-    // 1000 iteration of GD
-    for (int i = 0; i < 1000; i++) 
+    // 10 iteration of SGD
+    for (int i = 0; i < 10; i++) 
     {
-        gradient_descent(hotVectors, parameters, y_true);
+        // gradient_descent(hotVectors, parameters, y_true);
+        stochastic_gradient_descent(hotVectors, parameters, y_true);
         for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
         printf("-> %lf\n", total_mean_square_error(hotVectors, parameters, y_true));
     }
@@ -145,4 +147,16 @@ double total_mean_square_error(int **hotVectors, double *parameters, int *y_true
         r = (y_true[i] - tanh(multiplication_of_wx(hotVectors[i], parameters)));
         mse_sum += r * r;
     return (1.0 / N) * mse_sum;
+}
+
+
+void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true) 
+{
+    int random_i = rand() % N;
+    double *random_pdmse;
+    random_pdmse = partial_derivative_of_mean_square_error(hotVectors[random_i], parameters, y_true[random_i]);
+
+    for (int i = 0; i < D; i++) 
+        parameters[i] -= EPS * random_pdmse[i];
+    free(random_pdmse);
 }
