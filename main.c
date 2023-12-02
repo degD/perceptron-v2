@@ -153,12 +153,12 @@ double total_mean_square_error(int **hotVectors, double *parameters, int *y_true
 
 void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true) 
 {
-    double *random_pdmse;
-    random_pdmse = stochastic_partial_derivative_mse(hotVectors, parameters, y_true);
+    double *approx_pdmse;
+    approx_pdmse = stochastic_partial_derivative_mse(hotVectors, parameters, y_true);
 
     for (int i = 0; i < D; i++) 
-        parameters[i] -= EPS * random_pdmse[i];
-    free(random_pdmse);
+        parameters[i] -= EPS * approx_pdmse[i];
+    free(approx_pdmse);
 }
 
 
