@@ -7,6 +7,7 @@
 #define N 5
 #define D 5
 #define EPS 0.1
+#define CONVERGENCE_LIMIT 0.00001
 
 double multiplication_of_wx(int *singleHotVector, double *parameters);
 double *partial_derivative_of_mean_square_error(int *singleHotVector, double *parameters, int y_true);
@@ -22,6 +23,7 @@ int main()
     FILE *hotVectorsPtr, *truePtr;
     int **hotVectors, *y_true, i, j;
     double *parameters;
+    double total_mse = 1, total_mse_old = 0;
     char ch;
 
     // Open hot vectors file
@@ -89,12 +91,25 @@ int main()
     for (int i = 0; i < D; i++) parameters[i] = 0.1;
 
     // 10 iteration of SGD
+    puts("10 Iteration SGD:");
     for (int i = 0; i < 10; i++) 
     {
         // gradient_descent(hotVectors, parameters, y_true);
         stochastic_gradient_descent(hotVectors, parameters, y_true);
         for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
         printf("-> %lf\n", total_mean_square_error(hotVectors, parameters, y_true));
+    }
+
+    // GD until converge
+    puts("\nGD until converges:");
+    while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT)
+    {
+        gradient_descent(hotVectors, parameters, y_true);
+        total_mse_old = total_mse;
+        total_mse = total_mean_square_error(hotVectors, parameters, y_true);
+
+        for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
+        printf("-> %lf\n", fabs(total_mse - total_mse_old));
     }
 
     return 0;
