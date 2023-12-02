@@ -8,6 +8,7 @@
 #define D 5
 #define EPS 0.1
 #define CONVERGENCE_LIMIT 0.00001
+#define MSE_LIMIT 0.01
 
 double multiplication_of_wx(int *singleHotVector, double *parameters);
 double *partial_derivative_of_mean_square_error(int *singleHotVector, double *parameters, int y_true);
@@ -16,6 +17,7 @@ void gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double total_mean_square_error(int **hotVectors, double *parameters, int *y_true);
 void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, int *y_true);
+int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true);
 
 
 int main()
@@ -99,6 +101,11 @@ int main()
         for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
         printf("-> %lf\n", total_mean_square_error(hotVectors, parameters, y_true));
     }
+    free(parameters);
+
+    // Initialize parameters
+    parameters = calloc(D, sizeof(double));
+    for (int i = 0; i < D; i++) parameters[i] = 0.1;
 
     // GD until converge
     puts("\nGD until converges:");
@@ -111,6 +118,15 @@ int main()
         for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
         printf("-> %lf\n", fabs(total_mse - total_mse_old));
     }
+    free(parameters);
+
+    // Initialize parameters
+    parameters = calloc(D, sizeof(double));
+    for (int i = 0; i < D; i++) parameters[i] = 0.1;
+
+    // ADAM
+    puts("\nADAM algorithm:");
+    adaptive_movement_estimation_adam(hotVectors, parameters, y_true);
 
     return 0;
 }
@@ -181,4 +197,43 @@ double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, 
 {
     int random_i = rand() % N;
     return partial_derivative_of_mean_square_error(hotVectors[random_i], parameters, y_true[random_i]);
+}
+
+
+int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true)
+{
+    double total_mse = 1, total_mse_old = 0;
+    double *m, *v, *approx_gradient, *m_hat, *v_hat;
+    double alpha = 0.001, beta1 = 0.9, beta2 = 0.999, e = 0.000001;
+    int t = 0, step_count = 0;
+
+    m = calloc(D, sizeof(double));
+    v = calloc(D, sizeof(double));
+    m_hat = calloc(D, sizeof(double));
+    v_hat = calloc(D, sizeof(double));
+
+    while (total_mse > MSE_LIMIT)
+    {
+        t += 1;
+        approx_gradient = stochastic_partial_derivative_mse(hotVectors, parameters, y_true);
+
+        for (int i = 0; i < D; i++)
+        {
+            m[i] = (beta1 * m[i]) + ((1 - beta1) * approx_gradient[i]);
+            v[i] = (beta2 * v[i]) + ((1 - beta2) * approx_gradient[i] * approx_gradient[i]);
+            m_hat[i] = m[i] / (1 - pow(beta1, t));
+            v_hat[i] = v[i] / (1 - pow(beta2, t));
+            parameters[i] -= alpha * m_hat[i] / (sqrt(v_hat[i]) + e);
+        }
+
+        total_mse_old = total_mse;
+        total_mse = total_mean_square_error(hotVectors, parameters, y_true);
+
+        // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
+        printf("%4d -> %lf\n", step_count, total_mse);        
+
+        step_count++;
+    }
+
+    return step_count;
 }
