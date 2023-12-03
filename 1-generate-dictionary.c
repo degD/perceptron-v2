@@ -11,7 +11,7 @@ int main()
     FILE *sPtr, *dPtr;
     char **dict, ch, sample_word[MAX_WORD];
 
-    sPtr = fopen("samples.txt", "r");
+    sPtr = fopen("allsamples.txt", "r");
     dPtr = fopen("dictionary.txt", "w");
 
     if (sPtr == NULL || dPtr == NULL)
@@ -25,7 +25,7 @@ int main()
     {
         if (ch == ' ' || ch == '\n') sample_word_count++;
     }
-    printf("%d\n", sample_word_count);
+    printf("%d words\n", sample_word_count);
 
     // Allocate memory for dictionary
     dict = calloc(sample_word_count, sizeof(char *));
@@ -34,6 +34,8 @@ int main()
         dict[i] = calloc(MAX_WORD, sizeof(char));
         dict[i][0] = '\0';
     }
+
+    // puts("Memory allocated");
 
     // Find unique words
     rewind(sPtr);
@@ -75,15 +77,17 @@ int main()
     } 
     while (ch != EOF);
 
-    // printf("%d unique\n", unique_words);
+    printf("%d unique\n", unique_words);
     // for (int i = 0; i < unique_words; i++) printf("%s\n", dict[i]);
 
     // Save dictionary array to file
     fprintf(dPtr, "%d\n", unique_words);
     for (int i = 0; i < unique_words; i++) fprintf(dPtr, "%s\n", dict[i]);
+
+    puts("Saved to file");
     
-    free(dict);
     for (int i = 0; i < sample_word_count; i++) free(dict[i]);
+    free(dict);
 
     fclose(sPtr);
     fclose(dPtr);

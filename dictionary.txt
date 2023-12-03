@@ -1,4 +1,4 @@
-22
+33
 okul
 cok
 guzel
@@ -10,6 +10,10 @@ ders
 islemedi
 cunku
 hasta
+ile
+konustu
+odev
+verilmedi
 eve
 gec
 geldim
@@ -21,3 +25,10 @@ yeni
 bir
 araba
 almamis
+baba
+ne
+yaptin
+sen
+kopek
+alabilir
+miyiz

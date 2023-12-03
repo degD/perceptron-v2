@@ -12,12 +12,12 @@ int main()
     FILE *dPtr, *hvPtr, *sPtr;
 
     dPtr = fopen("dictionary.txt", "r");
-    sPtr = fopen("samples.txt", "r");
+    sPtr = fopen("trainingsamples.txt", "r");
     hvPtr = fopen("hotVectors.txt", "w");
 
     if (hvPtr == NULL || dPtr == NULL || sPtr == NULL)
     {
-        puts("!! Unable to access 'hotVectors.txt' or 'dictionary.txt' or 'samples.txt'\n");
+        puts("!! Unable to access 'hotVectors.txt' or 'dictionary.txt' or 'trainingsamples.txt'\n");
         return -1;
     }
 

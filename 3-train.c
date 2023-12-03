@@ -4,8 +4,8 @@
 #include <math.h>
 
 
-#define N 6
-#define D 22
+#define N 8
+#define D 33
 #define EPS 0.1
 #define CONVERGENCE_LIMIT 0.00001
 #define STEP_LIMIT 1000
@@ -45,7 +45,7 @@ int main()
     }   
 
     // Open true values file
-    truePtr = fopen("trues.txt", "r");
+    truePtr = fopen("trainingtrues.txt", "r");
     if (hotVectorsPtr == NULL) 
     {
         puts("!! Unable to open file 'trues.txt'");
