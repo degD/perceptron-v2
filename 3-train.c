@@ -15,7 +15,9 @@ void gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double total_mean_square_error(int **hotVectors, double *parameters, int *y_true);
 void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, int *y_true);
-int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true);
+int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true, FILE *logPtr);
+void write_log(FILE *logPtr, int step, double total_mse);
+
 
 static int N = 0;   // Number of training samples / hot vectors
 static int D = 0;   // Number of parameters / unique words / dictionary size
@@ -23,7 +25,7 @@ static int D = 0;   // Number of parameters / unique words / dictionary size
 
 int main()
 {
-    FILE *hotVectorsPtr, *truePtr, *modelPtr;
+    FILE *hotVectorsPtr, *truePtr, *modelPtr, *logPtr;
     int **hotVectors, *y_true, i, j;
     double *parameters;
     double total_mse = 1, total_mse_old = 0;
@@ -60,6 +62,14 @@ int main()
         puts("!! Unable to open file 'model.txt'");
         return -1;
     }   
+
+    // Open log file
+    logPtr = fopen("training.log", "w");
+    if (logPtr == NULL) 
+    {
+        puts("!! Unable to open file 'training.log'");
+        return -1;
+    }
 
     // Get number of hot vectors (N) and number of unique words (D)
     do {
@@ -123,6 +133,7 @@ int main()
             gradient_descent(hotVectors, parameters, y_true);
             total_mse_old = total_mse;
             total_mse = total_mean_square_error(hotVectors, parameters, y_true);
+            write_log(logPtr, step, total_mse);
 
             // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
             // printf("-> %lf\n", fabs(total_mse - total_mse_old));
@@ -138,6 +149,7 @@ int main()
             stochastic_gradient_descent(hotVectors, parameters, y_true);
             total_mse_old = total_mse;
             total_mse = total_mean_square_error(hotVectors, parameters, y_true);
+            write_log(logPtr, step, total_mse);
 
             // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
             // printf("-> %lf\n", fabs(total_mse - total_mse_old));
@@ -146,11 +158,12 @@ int main()
 
     // ADAM
     if (mode == 2)
-        adaptive_movement_estimation_adam(hotVectors, parameters, y_true);
+        step = adaptive_movement_estimation_adam(hotVectors, parameters, y_true, logPtr);
 
 
     // Save trained parameters and free memory
     puts("Complete, saving...");
+    if (step == STEP_LIMIT) puts("WARNING: Model did not converged.");
     for (int i = 0; i < D; i++) fprintf(modelPtr, "%lf\n", parameters[i]);
     free(parameters);
     
@@ -159,6 +172,7 @@ int main()
     free(y_true);
 
     fclose(modelPtr);
+    fclose(logPtr);
     return 0;
 }
 
@@ -233,12 +247,12 @@ double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, 
 }
 
 
-int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true)
+int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true, FILE *logPtr)
 {
     double total_mse = 1, total_mse_old = 0;
     double *m, *v, *approx_gradient, *m_hat, *v_hat;
     double alpha = 0.001, beta1 = 0.9, beta2 = 0.999, e = 0.000001;
-    int t = 0, step_count = 0;
+    int t = 0;
 
     m = calloc(D, sizeof(double));
     v = calloc(D, sizeof(double));
@@ -261,12 +275,18 @@ int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int 
 
         total_mse_old = total_mse;
         total_mse = total_mean_square_error(hotVectors, parameters, y_true);
+        write_log(logPtr, t, total_mse);
 
         // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
-        // printf("%4d -> %lf\n", step_count, total_mse);        
+        // printf("%4d -> %lf\n", t, total_mse);        
 
-        step_count++;
     }
 
-    return step_count;
+    return t;
+}
+
+
+void write_log(FILE *logPtr, int step, double total_mse)
+{
+    fprintf(logPtr, "%d %lf\n", step, total_mse);
 }
