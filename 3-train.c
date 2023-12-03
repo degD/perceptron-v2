@@ -17,8 +17,9 @@ void gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double total_mean_square_error(int **hotVectors, double *parameters, int *y_true);
 void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, int *y_true);
-int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true, FILE *logPtr);
+int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true, FILE *logPtr, FILE *pLogPtr);
 void write_log(FILE *logPtr, int step, double total_mse);
+void write_parameters_log(FILE *pLogPtr, int step, double *parameters);
 
 
 static int N = 0;   // Number of training samples / hot vectors
@@ -28,7 +29,7 @@ static int D = 0;   // Number of parameters / unique words / dictionary size
 int main()
 {
     clock_t start, end;
-    FILE *hotVectorsPtr, *truePtr, *modelPtr, *logPtr;
+    FILE *hotVectorsPtr, *truePtr, *modelPtr, *logPtr, *pLogPtr;
     double elapsed_time;
     int **hotVectors, *y_true, i, j;
     double *parameters, **sgd_parameters;
@@ -72,6 +73,14 @@ int main()
     if (logPtr == NULL) 
     {
         puts("!! Unable to open file 'training.log'");
+        return -1;
+    }
+
+    // Open parameters log file
+    pLogPtr = fopen("parameters.log", "w");
+    if (logPtr == NULL) 
+    {
+        puts("!! Unable to open file 'parameters.log'");
         return -1;
     }
 
@@ -141,6 +150,7 @@ int main()
             total_mse_old = total_mse;
             total_mse = total_mean_square_error(hotVectors, parameters, y_true);
             write_log(logPtr, step, total_mse);
+            write_parameters_log(pLogPtr, step, parameters);
 
             // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
             // printf("-> %lf\n", fabs(total_mse - total_mse_old));
@@ -166,6 +176,7 @@ int main()
             total_mse_old = total_mse;
             total_mse = total_mean_square_error(hotVectors, parameters, y_true);
             write_log(logPtr, step, total_mse);
+            write_parameters_log(pLogPtr, step, parameters);
 
             // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
             // printf("-> %lf\n", fabs(total_mse - total_mse_old));
@@ -186,7 +197,7 @@ int main()
 
     // ADAM
     if (mode == 2)
-        step = adaptive_movement_estimation_adam(hotVectors, parameters, y_true, logPtr);
+        step = adaptive_movement_estimation_adam(hotVectors, parameters, y_true, logPtr, pLogPtr);
 
     // Record the ending clock
     end = clock();
@@ -208,6 +219,7 @@ int main()
 
     fclose(modelPtr);
     fclose(logPtr);
+    fclose(pLogPtr);
     return 0;
 }
 
@@ -282,7 +294,7 @@ double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, 
 }
 
 
-int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true, FILE *logPtr)
+int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true, FILE *logPtr, FILE *pLogPtr)
 {
     double total_mse = 1, total_mse_old = 0;
     double *m, *v, *approx_gradient, *m_hat, *v_hat;
@@ -311,6 +323,7 @@ int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int 
         total_mse_old = total_mse;
         total_mse = total_mean_square_error(hotVectors, parameters, y_true);
         write_log(logPtr, t, total_mse);
+        write_parameters_log(pLogPtr, t, parameters);
 
         // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
         // printf("%4d -> %lf\n", t, total_mse);        
@@ -324,4 +337,12 @@ int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int 
 void write_log(FILE *logPtr, int step, double total_mse)
 {
     fprintf(logPtr, "%d %lf\n", step, total_mse);
+}
+
+
+void write_parameters_log(FILE *pLogPtr, int step, double *parameters)
+{
+    fprintf(pLogPtr, "%d", step);
+    for (int i = 0; i < D; i++) fprintf(pLogPtr, " %lf", parameters[i]);
+    fputc('\n', pLogPtr);
 }
