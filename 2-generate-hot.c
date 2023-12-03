@@ -5,19 +5,43 @@
 
 #define MAX_WORD 100
 
+
+int generate_hv_from_samples(FILE *sPtr, FILE *hvPtr);
+
+
 int main()
+{
+    FILE *hvPtr, *sPtr;
+
+    // Generating hot vectors for training samples
+    sPtr = fopen("trainingsamples.txt", "r");
+    hvPtr = fopen("traininghv.txt", "w");
+    generate_hv_from_samples(sPtr, hvPtr);
+    fclose(sPtr);
+    fclose(hvPtr);
+
+    // Generating hot vectors for test samples
+    sPtr = fopen("testingsamples.txt", "r");
+    hvPtr = fopen("testinghv.txt", "w");
+    generate_hv_from_samples(sPtr, hvPtr);
+    fclose(sPtr);
+    fclose(hvPtr);   
+
+    return 0;
+}
+
+
+int generate_hv_from_samples(FILE *sPtr, FILE *hvPtr)
 {
     char **dict, ch, word[MAX_WORD];
     int unique_words, *hotVector, word_i = 0;
-    FILE *dPtr, *hvPtr, *sPtr;
+    FILE *dPtr;
 
     dPtr = fopen("dictionary.txt", "r");
-    sPtr = fopen("trainingsamples.txt", "r");
-    hvPtr = fopen("hotVectors.txt", "w");
 
     if (hvPtr == NULL || dPtr == NULL || sPtr == NULL)
     {
-        puts("!! Unable to access 'hotVectors.txt' or 'dictionary.txt' or 'trainingsamples.txt'\n");
+        puts("!! Unable to access 'traininghv.txt' or 'dictionary.txt' or 'trainingsamples.txt'\n");
         return -1;
     }
 
@@ -70,8 +94,6 @@ int main()
     }
     while (ch != EOF);
 
-    
     fclose(dPtr);
-    fclose(hvPtr);
     return 0;
 }
