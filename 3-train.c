@@ -38,10 +38,10 @@ int main()
     }
 
     // Open hot vectors file
-    hotVectorsPtr = fopen("hotVectors.txt", "r");
+    hotVectorsPtr = fopen("traininghv.txt", "r");
     if (hotVectorsPtr == NULL) 
     {
-        puts("!! Unable to open file 'hotVectors.txt'");
+        puts("!! Unable to open file 'traininghv.txt'");
         return -1;
     }   
 
@@ -70,7 +70,7 @@ int main()
     while (ch != EOF);
     D /= N;
     rewind(hotVectorsPtr);
-    printf("N: %3d, D: %3d\n", N, D);
+    // printf("N: %3d, D: %3d\n", N, D);
 
     // Read hot vectors (NxD)
     hotVectors = calloc(N, sizeof(int *));
