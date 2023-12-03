@@ -4,8 +4,6 @@
 #include <math.h>
 
 
-#define N 8
-#define D 33
 #define EPS 0.1
 #define CONVERGENCE_LIMIT 0.00001
 #define STEP_LIMIT 1000
@@ -18,6 +16,9 @@ double total_mean_square_error(int **hotVectors, double *parameters, int *y_true
 void stochastic_gradient_descent(int **hotVectors, double *parameters, int *y_true);
 double *stochastic_partial_derivative_mse(int **hotVectors, double *parameters, int *y_true);
 int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int *y_true);
+
+static int N = 0;   // Number of training samples / hot vectors
+static int D = 0;   // Number of parameters / unique words / dictionary size
 
 
 int main()
@@ -59,6 +60,17 @@ int main()
         puts("!! Unable to open file 'model.txt'");
         return -1;
     }   
+
+    // Get number of hot vectors (N) and number of unique words (D)
+    do {
+        ch = fgetc(hotVectorsPtr);
+        if (ch == '\n') N += 1;
+        if (ch == '0' || ch == '1') D += 1;
+    }
+    while (ch != EOF);
+    D /= N;
+    rewind(hotVectorsPtr);
+    printf("N: %3d, D: %3d\n", N, D);
 
     // Read hot vectors (NxD)
     hotVectors = calloc(N, sizeof(int *));
@@ -106,7 +118,7 @@ int main()
     if (mode == 0)
     {
         // Repeat until converges or step number exceeds the limit
-        while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && step < STEP_LIMIT)
+        while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && step++ < STEP_LIMIT)
         {
             gradient_descent(hotVectors, parameters, y_true);
             total_mse_old = total_mse;
@@ -121,7 +133,7 @@ int main()
     if (mode == 1)
     {
         // Repeat until converges or step number exceeds the limit
-        while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && step < STEP_LIMIT)
+        while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && step++ < STEP_LIMIT)
         {
             stochastic_gradient_descent(hotVectors, parameters, y_true);
             total_mse_old = total_mse;
