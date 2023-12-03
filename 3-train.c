@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 
 #define EPS 0.1
@@ -26,7 +27,9 @@ static int D = 0;   // Number of parameters / unique words / dictionary size
 
 int main()
 {
+    clock_t start, end;
     FILE *hotVectorsPtr, *truePtr, *modelPtr, *logPtr;
+    double elapsed_time;
     int **hotVectors, *y_true, i, j;
     double *parameters, **sgd_parameters;
     double total_mse = 1, total_mse_old = 0;
@@ -125,6 +128,9 @@ int main()
     parameters = calloc(D, sizeof(double));
     for (int i = 0; i < D; i++) parameters[i] = 0.1;
 
+    // Record the starting clock
+    start = clock();
+
     // Gradient Descent
     if (mode == 0)
     {
@@ -173,16 +179,26 @@ int main()
                 parameters[i] += sgd_parameters[j][i];
             parameters[i] /= SGD_MEAN_NUM;
         }
+        
+        for (int i = 0; i < SGD_MEAN_NUM; i++) free(sgd_parameters[i]);
+        free(sgd_parameters);
     }
 
     // ADAM
     if (mode == 2)
         step = adaptive_movement_estimation_adam(hotVectors, parameters, y_true, logPtr);
 
+    // Record the ending clock
+    end = clock();
+
+    // Converting clock time to ms
+    elapsed_time = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+    printf("Took approximately %lf ms to train.\n", elapsed_time);
+    printf("For %d iterations, that means approximately %lf ms per iteration.\n", step, elapsed_time / step);
 
     // Save trained parameters and free memory
     puts("Complete, saving...");
-    if (step == STEP_LIMIT) puts("WARNING: Model did not converged.");
+    if (step == STEP_LIMIT) puts("WARNING: Model did not converge.");
     for (int i = 0; i < D; i++) fprintf(modelPtr, "%lf\n", parameters[i]);
     free(parameters);
     
