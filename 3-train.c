@@ -135,7 +135,7 @@ int main()
 
     // Initialize parameters
     parameters = calloc(D, sizeof(double));
-    for (int i = 0; i < D; i++) parameters[i] = 0.001;
+    for (int i = 0; i < D; i++) parameters[i] = 0.001; // Small values are better, otherwise tanh() will be saturated
 
     // Record the starting clock
     start = clock();
