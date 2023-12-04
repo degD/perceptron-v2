@@ -67,7 +67,7 @@ int main()
     for (int i = 0; i < N; i++) 
     {
         y_hat = tanh(multiplication_of_wx(hotVectors[i], parameters));
-        printf("% lf, %d\n", y_hat, y_true[i]);
+        // printf("% lf, %d\n", y_hat, y_true[i]);
         y_hat = y_hat > 0 ? 1 : -1;
         if (y_hat == y_true[i]) number_of_successful++;
     }
