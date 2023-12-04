@@ -5,9 +5,9 @@
 #include <time.h>
 
 
-#define EPS 0.01
-#define CONVERGENCE_LIMIT 0.00001
-#define STEP_LIMIT 1000
+#define EPS 0.1
+#define CONVERGENCE_LIMIT 0.000001
+#define STEP_LIMIT 100000
 #define SGD_MEAN_NUM 5
 
 double multiplication_of_wx(int *singleHotVector, double *parameters);
@@ -36,8 +36,6 @@ int main()
     double total_mse = 1, total_mse_old = 0;
     char ch;
     int mode, step = 0;
-
-    srand(time(NULL));
 
     printf("Which algorithm? (GD: 0, SGD: 1, ADAM: 2): ");
     scanf("%d", &mode);
@@ -137,7 +135,7 @@ int main()
 
     // Initialize parameters
     parameters = calloc(D, sizeof(double));
-    for (int i = 0; i < D; i++) parameters[i] = (rand() % 1000) / 1000.0; 
+    for (int i = 0; i < D; i++) parameters[i] = 0.001;
 
     // Record the starting clock
     start = clock();
@@ -242,6 +240,7 @@ double *partial_derivative_of_mean_square_error(int *singleHotVector, double *pa
 {
     double wx, *pdmse = calloc(D, sizeof(double));
     wx = multiplication_of_wx(singleHotVector, parameters);
+    // printf("%lf\n", wx);
     for (int i = 0; i < D; i++) 
         pdmse[i] = (single_y_true - tanh(wx)) * singleHotVector[i] * (-1 / (cosh(wx) * cosh(wx)));
     return pdmse;
