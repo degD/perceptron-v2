@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_WORD 100
+#define MAX_WORD 300
 
 
 int generate_hv_from_samples(FILE *sPtr, FILE *hvPtr);

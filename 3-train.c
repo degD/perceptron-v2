@@ -5,7 +5,7 @@
 #include <time.h>
 
 
-#define EPS 0.1
+#define EPS 0.01
 #define CONVERGENCE_LIMIT 0.00001
 #define STEP_LIMIT 1000
 #define SGD_MEAN_NUM 5
@@ -37,6 +37,8 @@ int main()
     char ch;
     int mode, step = 0;
 
+    srand(time(NULL));
+
     printf("Which algorithm? (GD: 0, SGD: 1, ADAM: 2): ");
     scanf("%d", &mode);
     if (mode < 0 || mode > 2) {
@@ -54,7 +56,7 @@ int main()
 
     // Open true values file
     truePtr = fopen("trainingtrues.txt", "r");
-    if (hotVectorsPtr == NULL) 
+    if (truePtr == NULL) 
     {
         puts("!! Unable to open file 'trues.txt'");
         return -1;
@@ -135,7 +137,7 @@ int main()
 
     // Initialize parameters
     parameters = calloc(D, sizeof(double));
-    for (int i = 0; i < D; i++) parameters[i] = 0.1;
+    for (int i = 0; i < D; i++) parameters[i] = (rand() % 1000) / 1000.0; 
 
     // Record the starting clock
     start = clock();
@@ -144,7 +146,7 @@ int main()
     if (mode == 0)
     {
         // Repeat until converges or step number exceeds the limit
-        while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && step++ < STEP_LIMIT)
+        while (fabs(total_mse - total_mse_old) > CONVERGENCE_LIMIT && step < STEP_LIMIT)
         {
             gradient_descent(hotVectors, parameters, y_true);
             total_mse_old = total_mse;
@@ -154,6 +156,8 @@ int main()
 
             // for (int j = 0; j < D; j++) printf("% lf ", parameters[j]);
             // printf("-> %lf\n", fabs(total_mse - total_mse_old));
+
+            step++;
         }
     }
 

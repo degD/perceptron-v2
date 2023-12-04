@@ -1,30 +1,6 @@
 
 from unidecode import unidecode
-import string
-
-with open('allsamples.txt', 'r') as a:
-    
-    tra = open('trainingsamples.txt', 'w')
-    tea = open('testingsamples.txt', 'w')
-    
-    c = 1
-    k = 0
-    limit = 100
-    for aline in a.readlines():
-        
-        if c <= (limit * 4/5) + k * limit:
-            tra.write(aline)
-        elif c <= limit + k * limit:
-            tea.write(aline)
-        else:
-            k += 1
-            
-    
-        
-        
-    
-    
-    
+import string  
     
 sample_files = ['allsamples.txt', 'trainingsamples.txt', 'testingsamples.txt']
 for filename in sample_files:
