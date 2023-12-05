@@ -5,9 +5,9 @@
 #include <time.h>
 
 
-#define EPS 0.1
-#define CONVERGENCE_LIMIT 0.000001
-#define STEP_LIMIT 100000
+#define EPS 0.01
+#define CONVERGENCE_LIMIT 0.0001
+#define STEP_LIMIT 1000
 #define SGD_MEAN_NUM 5
 
 double multiplication_of_wx(int *singleHotVector, double *parameters);
@@ -135,7 +135,8 @@ int main()
 
     // Initialize parameters
     parameters = calloc(D, sizeof(double));
-    for (int i = 0; i < D; i++) parameters[i] = 0.001; // Small values are better, otherwise tanh() will be saturated
+    for (int i = 0; i < D; i++) parameters[i] = 0.00001; // Small values are better, otherwise tanh() will be saturated
+    // for (int i = 0; i < D; i++) parameters[i] = (double) (rand() % 1000) / 10000;
 
     // Record the starting clock
     start = clock();
@@ -214,6 +215,9 @@ int main()
     if (step == STEP_LIMIT) puts("WARNING: Model did not converge.");
     for (int i = 0; i < D; i++) fprintf(modelPtr, "%lf\n", parameters[i]);
     free(parameters);
+
+    // Save time to log file
+    fprintf(logPtr, "%lf %lf", elapsed_time, step / elapsed_time);
     
     for (int i = 0; i < N; i++) free(hotVectors[i]);
     free(hotVectors);
