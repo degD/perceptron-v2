@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 
 fig, axs = plt.subplots(3, 2, layout="constrained", sharey=True)
 
+parameter_parameters = ["y", "n 0.01", "n 0.1", "n 1", "n 0"]
+
 for i in range(3):
     
-    os.system(f"gcc 3-train.c -lm -o ./3.out; echo {i} | ./3.out")
+    os.system(f"gcc 3-train.c -lm -o ./3.out; echo {i} n 0.1 | ./3.out")
     
     with open("training.log") as tlog:
         
