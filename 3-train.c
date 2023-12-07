@@ -5,8 +5,8 @@
 #include <time.h>
 
 
-#define EPS 0.001
-#define CONVERGENCE_LIMIT 0.000001
+#define EPS 0.1
+#define CONVERGENCE_LIMIT 0.00001
 #define STEP_LIMIT 1000
 #define SGD_MEAN_NUM 5
 
@@ -314,7 +314,7 @@ int adaptive_movement_estimation_adam(int **hotVectors, double *parameters, int 
 {
     double total_mse = 1, total_mse_old = 0;
     double *m, *v, *approx_gradient, *m_hat, *v_hat;
-    double alpha = 0.005, beta1 = 0.9, beta2 = 0.999, e = 0.000001;
+    double alpha = EPS, beta1 = 0.9, beta2 = 0.999, e = 0.000001;
     int t = 0;
 
     m = calloc(D, sizeof(double));
