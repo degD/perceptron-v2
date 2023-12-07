@@ -5,9 +5,9 @@
 #include <time.h>
 
 
-#define EPS 0.05
-#define CONVERGENCE_LIMIT 0.00001
-#define STEP_LIMIT 1000
+#define EPS 0.01
+#define CONVERGENCE_LIMIT 0.000001
+#define STEP_LIMIT 1500
 #define SGD_MEAN_NUM 5
 
 double multiplication_of_wx(int *singleHotVector, double *parameters);
@@ -37,7 +37,7 @@ int main()
     char ch;
     int mode, step = 0;
 
-    srand(time(NULL));
+    // srand(time(NULL));
 
     printf("Which algorithm? (GD: 0, SGD: 1, ADAM: 2): ");
     scanf("%d", &mode);

@@ -27,8 +27,6 @@ int main()
     fclose(sPtr);
     fclose(hvPtr);   
 
-    puts("Hot vector generation successful!");
-
     return 0;
 }
 
