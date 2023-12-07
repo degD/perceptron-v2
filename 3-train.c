@@ -5,9 +5,9 @@
 #include <time.h>
 
 
-#define EPS 0.01
-#define CONVERGENCE_LIMIT 0.0001
-#define STEP_LIMIT 1000
+#define EPS 0.001
+#define CONVERGENCE_LIMIT 0.00001
+#define STEP_LIMIT 5000
 #define SGD_MEAN_NUM 5
 
 double multiplication_of_wx(int *singleHotVector, double *parameters);
@@ -32,7 +32,7 @@ int main()
     FILE *hotVectorsPtr, *truePtr, *modelPtr, *logPtr, *pLogPtr;
     double elapsed_time;
     int **hotVectors, *y_true, i, j;
-    double *parameters, **sgd_parameters;
+    double *parameters, **sgd_parameters, parameter_init;
     double total_mse = 1, total_mse_old = 0;
     char ch;
     int mode, step = 0;
@@ -135,7 +135,17 @@ int main()
 
     // Initialize parameters
     parameters = calloc(D, sizeof(double));
-    for (int i = 0; i < D; i++) parameters[i] = (double) (rand() % 1000) / 10000;
+
+    printf("Initializing parameters. Randomize? (y/n): ");
+    getc(stdin);
+    ch = getc(stdin);
+    if (ch == 'y' || ch == 'Y') {
+        for (int i = 0; i < D; i++) parameters[i] = (double) (rand() % 1000) / 10000;
+    } else {
+        printf("Enter a real number: ");
+        scanf("%lf", &parameter_init);
+        for (int i = 0; i < D; i++) parameters[i] = parameter_init;
+    }
 
     // Record the starting clock
     start = clock();
