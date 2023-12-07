@@ -3,7 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-fig, axs = plt.subplots(3, 2, layout="constrained", sharey=True)
+fig, axs = plt.subplots(3, 2, layout="constrained")
 
 # Epoch vs loss
 for i in range(3):
@@ -19,9 +19,18 @@ for i in range(3):
     
     axs[i][0].plot(np.arange(epoch_range), loss_data)
 
-    if i == 0: axs[i][0].set_title("GD - epoch vs loss")
-    if i == 1: axs[i][0].set_title("SGD - epoch vs loss")
-    if i == 2: axs[i][0].set_title("ADAM - epoch vs loss")
+    if i == 0: 
+        axs[i][0].set_title("GD - epoch vs loss")
+        axs[i][0].set_ylabel("loss")
+        axs[i][0].set_xlabel("epoch")
+    if i == 1: 
+        axs[i][0].set_title("SGD - epoch vs loss")
+        axs[i][0].set_ylabel("loss")
+        axs[i][0].set_xlabel("epoch")
+    if i == 2: 
+        axs[i][0].set_title("ADAM - epoch vs loss")
+        axs[i][0].set_ylabel("loss")
+        axs[i][0].set_xlabel("epoch")
     
     plt.xlabel("time")
     plt.ylabel("epoch")
@@ -36,16 +45,21 @@ for i in range(3):
         # Acquiring data
         data = tlog.readlines()
         time_range = data[-1].split()
-        loss_data = np.array([float(line.split()[1]) for line in data[:-1]])        
+        loss_data = np.array([float(line.split()[1]) for line in data[:-1]])
     
     axs[i][1].plot(np.linspace(0, float(time_range[0]), len(loss_data)), loss_data)
 
-    if i == 0: axs[i][1].set_title("GD - time (ms) vs loss")
-    if i == 1: axs[i][1].set_title("SGD - time (ms) vs loss")
-    if i == 2: axs[i][1].set_title("ADAM - time (ms) vs loss")
-    
-    plt.xlabel("time")
-    plt.ylabel("epoch")
-
+    if i == 0: 
+        axs[i][1].set_title("GD - time (ms) vs loss")
+        axs[i][1].set_ylabel("loss")
+        axs[i][1].set_xlabel("time")
+    if i == 1: 
+        axs[i][1].set_title("SGD - time (ms) vs loss")
+        axs[i][1].set_ylabel("loss")
+        axs[i][1].set_xlabel("time")
+    if i == 2: 
+        axs[i][1].set_title("ADAM - time (ms) vs loss")
+        axs[i][1].set_ylabel("loss")
+        axs[i][1].set_xlabel("time")
     
 plt.show()
